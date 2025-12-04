@@ -125,6 +125,47 @@ pub async fn run_downloads(input: PathBuf, output: PathBuf, concurrency: Option<
 
     Ok(())
 }
+pub async fn run_single_download(
+    url: String,
+    output: PathBuf,
+    concurrency: Option<usize>,
+    rate_limit: Option<u32>,
+    split: usize,
+    verify_mode: VerifyMode,
+) -> Result<()> {
+    if !output.exists() {
+        fs::create_dir_all(&output).await.context("Failed to create output directory")?;
+    }
+
+    let items = vec![DownloadItem { url: url.clone(), hash: None }];
+    
+    // Pre-calculate total size
+    println!("Calculating size...");
+    let size_map = get_total_size(&items).await;
+    let expected_hashes = HashMap::new(); // Single URL download via CLI doesn't support hash verification yet
+
+    let downloader = Arc::new(Downloader::new(
+        output.clone(), 
+        rate_limit, 
+        split, 
+        1, 
+        size_map, 
+        expected_hashes, 
+        verify_mode
+    ));
+    
+    // For single file, we don't need complex semaphore logic, but we keep the structure consistent
+    // Concurrency here applies to splits if we were downloading multiple files, 
+    // but for single file, the splits are handled inside download_file.
+    // However, download_file itself spawns tasks.
+    
+    if let Err(e) = downloader.download_file(items[0].clone()).await {
+        eprintln!("Failed to download {}: {}", url, e);
+        return Err(e);
+    }
+
+    Ok(())
+}
 
 pub async fn list_downloads(output: PathBuf, input: PathBuf) -> Result<()> {
     if !output.exists() {

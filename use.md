@@ -12,7 +12,15 @@ RDL (Rust Downloader) 是一个高性能、支持断点续传、多线程并发�
 
 ## 🚀 快速开始
 
-### 1. 基础下载
+### 1. 单文件下载
+
+直接在命令行指定 URL 即可下载：
+
+```bash
+rdl https://example.com/file.zip
+```
+
+### 2. 批量下载
 
 在当前目录下创建一个 `download.txt` 文件，每行一个 URL：
 
@@ -29,7 +37,7 @@ rdl
 
 工具将自动读取 `download.txt` 并下载文件到 `downloads` 目录。
 
-### 2. 下载 ModelScope 模型
+### 3. 下载 ModelScope 模型
 
 直接指定模型名称，工具会自动获取文件列表并开始下载：
 
@@ -47,6 +55,7 @@ rdl --fetch-list Qwen/Qwen3-Next-80B-A3B-Instruct
 
 | 参数 | 简写 | 说明 | 默认值 |
 | :--- | :--- | :--- | :--- |
+| `[URL]` | | (可选) 单个下载链接，若提供则忽略任务文件 | 无 |
 | `--tasks-file` | `-t` | 任务清单文件路径 | `download.txt` |
 | `--download-dir` | `-d` | 下载保存目录 | `downloads` |
 | `--concurrency` | `-c` | 同时下载的文件数量 | CPU 核心数 |

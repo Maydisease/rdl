@@ -15,6 +15,10 @@ use std::path::PathBuf;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
+    /// Single URL to download (optional, if provided, tasks-file is ignored)
+    #[arg(index = 1)]
+    url: Option<String>,
+
     /// Path to the file containing URLs (one per line)
     #[arg(short = 't', long = "tasks-file", default_value = "download.txt")]
     tasks_file: PathBuf,
@@ -82,8 +86,11 @@ fn main() -> Result<()> {
     let output_is_default = args.download_dir == PathBuf::from("downloads");
 
     // Resolve paths to absolute before daemonizing to avoid issues with working directory
-    if let Ok(abs_input) = std::fs::canonicalize(&args.tasks_file) {
-        args.tasks_file = abs_input;
+    // Only if we are NOT in single URL mode (because in single URL mode, tasks_file might be default but unused)
+    if args.url.is_none() {
+        if let Ok(abs_input) = std::fs::canonicalize(&args.tasks_file) {
+            args.tasks_file = abs_input;
+        }
     }
     // Output dir might not exist yet, so we resolve it relative to current dir
     if args.download_dir.is_relative() {
@@ -135,15 +142,26 @@ fn main() -> Result<()> {
     // Now start the runtime for the actual download task
     let rt = tokio::runtime::Runtime::new()?;
     rt.block_on(async {
-        crate::commands::run_downloads(
-            args.tasks_file,
-            args.download_dir,
-            args.concurrency,
-            args.rate_limit,
-            args.split,
-            args.daemon,
-            args.verify_hash,
-        ).await
+        if let Some(url) = args.url {
+            crate::commands::run_single_download(
+                url,
+                args.download_dir,
+                args.concurrency,
+                args.rate_limit,
+                args.split,
+                args.verify_hash,
+            ).await
+        } else {
+            crate::commands::run_downloads(
+                args.tasks_file,
+                args.download_dir,
+                args.concurrency,
+                args.rate_limit,
+                args.split,
+                args.daemon,
+                args.verify_hash,
+            ).await
+        }
     })
 }
 

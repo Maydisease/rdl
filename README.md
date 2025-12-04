@@ -1,4 +1,4 @@
-push# RDL (Rust Downloader)
+# RDL (Rust Downloader)
 
 RDL 是一个高性能、轻量级的命令行下载工具，专为大文件下载和模型仓库（如 ModelScope）设计。它基于 Rust 编写，提供极快的下载速度和稳定的断点续传能力。
 
@@ -28,7 +28,13 @@ cp target/release/rdl /usr/local/bin/
 
 ## 📖 快速上手
 
-### 1. 通用文件下载
+### 1. 单文件下载
+
+```bash
+rdl https://example.com/file.zip
+```
+
+### 2. 批量下载
 
 创建一个包含 URL 的 `download.txt` 文件，然后运行：
 
@@ -36,7 +42,7 @@ cp target/release/rdl /usr/local/bin/
 rdl
 ```
 
-### 2. 下载 ModelScope 模型
+### 3. 下载 ModelScope 模型
 
 ```bash
 rdl --fetch-list Qwen/Qwen3-Next-80B-A3B-Instruct
